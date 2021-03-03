@@ -57,14 +57,46 @@ Objectives:
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-
+#include <readline/readline.h>
+#include <readline/history.h>
 /**********************************************************************
 ./esh <arg1> &
 
     maybe put some usage here??
 **********************************************************************/
 
+char** parseInput(char* input, int* numArgs);
+
 int main(int argc, char const *argv[]) {
 	/* code */
+	char* input;
+	int numArgs = 0;
+	char *token;
+	char** args = NULL;
+
+	while (1){
+		numArgs = 0;
+		input = readline("esh>");
+		token = strtok(input, " ");
+		while ( token != NULL ){
+			args = (char **)realloc(args, sizeof(char **)*(numArgs+1));
+			args[numArgs] = (char *)malloc(sizeof(char *)*strlen(token));
+			strcpy(args[numArgs],token);
+			numArgs = numArgs + 1;
+			token = strtok(NULL, " ");
+		}
+
+		// Demonstrating the argument number and each token. args[0] should be the command.
+		printf("number of arguments: %i\n", numArgs);
+		int i =0;
+		while (i < numArgs ){
+			printf("LINE: %s\n", args[i]);
+			i++;
+		}	
+	}
+	
+	
 	return 0;
 }
+
+
