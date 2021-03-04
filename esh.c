@@ -65,14 +65,32 @@ Objectives:
     maybe put some usage here??
 **********************************************************************/
 
-char** parseInput(char* input, int* numArgs);
-
 int main(int argc, char const *argv[]) {
-	/* code */
+	char* pathEnviron = getenv("PATH");
+	char** paths = (char **)malloc(128*sizeof(char*));
 	char* input;
 	int numArgs = 0;
 	char *token;
 	char** args = NULL;
+	int numPaths = 0; // number of directories on PATH
+
+	// Seperate each directory on PATH by ":"
+	token = strtok(pathEnviron,":");
+	while ( token != NULL ){ 
+		printf("%s\n",token);
+		paths[numPaths] = (char *)malloc(strlen(token)*sizeof(char *));
+		strcpy(paths[numPaths],token);
+		numPaths++;
+		token = strtok(NULL,":");
+	}
+	numPaths--;	
+	
+	// Print statement to confirm paths in path[]
+	int j=0;
+	while ( j <= numPaths){
+		printf("FILE PATH:\n %s\n", paths[j]);
+		j++;
+	}
 
 	while (1){
 		numArgs = 0;
