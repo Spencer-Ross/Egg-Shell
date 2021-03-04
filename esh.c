@@ -56,6 +56,7 @@ Objectives:
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <dirent.h>
 #include <string.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -72,6 +73,8 @@ int main(int argc, char const *argv[]) {
 	int numArgs = 0;
 	char *token;
 	char** args = NULL;
+	struct dirent *de;
+
 	int numPaths = 0; // number of directories on PATH
 
 	// Seperate each directory on PATH by ":"
@@ -110,7 +113,26 @@ int main(int argc, char const *argv[]) {
 		while (i < numArgs ){
 			printf("LINE: %s\n", args[i]);
 			i++;
-		}	
+		}
+		execv(paths[0],args);	
+
+		// Open each directory and see if args[0] is in them.
+		j=0;
+		DIR *dr;
+		while( j<= numPaths ){
+			dr=opendir(paths[j]);
+			if(dr == NULL){
+				printf("Couldn't open directory.\n");
+				return 0;
+			}
+			while( (de = readdir(dr)) != NULL){
+				if(strcmp(de->d_name,args[0]) == 0){
+					printf("It's in here: %s\n", paths[j]);
+				}
+			}
+			j++;
+			
+		}
 	}
 	
 	
