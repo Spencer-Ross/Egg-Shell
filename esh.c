@@ -60,6 +60,10 @@ Objectives:
 #include <string.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+
+#define FALSE 0
+#define TRUE 1
+#define SIZE 128
 /**********************************************************************
 ./esh <arg1> &
 
@@ -68,9 +72,9 @@ Objectives:
 
 int main(int argc, char const *argv[]) {
 	char* pathEnviron = getenv("PATH");
-	char** paths = (char **)malloc(128*sizeof(char*));
+	char** paths = (char **)malloc(SIZE*sizeof(char*));
 	char* input;
-	int numArgs = 0;
+	int status, numArgs = 0;
 	char *token;
 	char** args = NULL;
 	struct dirent *de;
@@ -90,7 +94,7 @@ int main(int argc, char const *argv[]) {
 	
 	// Print statement to confirm paths in path[]
 	int j;
-	for(int j=0; j <= numPaths; j++) printf("FILE PATH:\n %s\n", paths[j]);
+	for(j=0; j <= numPaths; j++) printf("FILE PATH:\n %s\n", paths[j]);
 
 	while (1){
 		numArgs = 0;
@@ -111,7 +115,7 @@ int main(int argc, char const *argv[]) {
 			printf("LINE: %s\n", args[i]);
 			i++;
 		}
-		
+
 		if(strcmp(args[0], "exit") == 0) {
 			for(int k=0; k<numArgs; k++) free(args[k]);
 			for(int k=0; k<numPaths; k++) free(paths[k]);
@@ -119,24 +123,33 @@ int main(int argc, char const *argv[]) {
 			free(paths);
 			exit(0);
 		}
-		execv(paths[0],args);	
+		// execv(paths[0],args);	
 
 		// Open each directory and see if args[0] is in them.
 		j=0;
 		DIR *dr;
+		_Bool found = FALSE;
 		while( j<= numPaths ){
 			dr=opendir(paths[j]);
 			if(dr == NULL){
 				printf("Couldn't open directory.\n");
-				return 0;
+				// return 0;
+				continue;
 			}
 			while( (de = readdir(dr)) != NULL){
 				if(strcmp(de->d_name,args[0]) == 0){
 					printf("It's in here: %s\n", paths[j]);
+					if(!fork()) {
+						execv(paths[j], args);
+						perror("Can't exec");
+					} 
+					wait(&status);
+					found = TRUE;
+					break;	// break if found
 				}
 			}
+			if(found) break; // if command found exececuted stop looking for it
 			j++;
-			
 		}
 	}
 	
