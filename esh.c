@@ -89,11 +89,8 @@ int main(int argc, char const *argv[]) {
 	numPaths--;	
 	
 	// Print statement to confirm paths in path[]
-	int j=0;
-	while ( j <= numPaths){
-		printf("FILE PATH:\n %s\n", paths[j]);
-		j++;
-	}
+	int j;
+	for(int j=0; j <= numPaths; j++) printf("FILE PATH:\n %s\n", paths[j]);
 
 	while (1){
 		numArgs = 0;
@@ -113,6 +110,14 @@ int main(int argc, char const *argv[]) {
 		while (i < numArgs ){
 			printf("LINE: %s\n", args[i]);
 			i++;
+		}
+		
+		if(strcmp(args[0], "exit") == 0) {
+			for(int k=0; k<numArgs; k++) free(args[k]);
+			for(int k=0; k<numPaths; k++) free(paths[k]);
+			free(args);
+			free(paths);
+			exit(0);
 		}
 		execv(paths[0],args);	
 
