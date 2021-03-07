@@ -103,10 +103,10 @@ int main(int argc, char const *argv[]) {
 
 	while (1){
 		runInTheBackground = false;
+		args = (char **)realloc(args,0);
 		j=0
 		numArgs = 0;
 		int i =0;
-		
 		input = readline("esh>");
 		token = strtok(input, " ");
 		while ( token != NULL ){
