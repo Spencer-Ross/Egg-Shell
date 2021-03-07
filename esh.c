@@ -74,11 +74,13 @@ int main(int argc, char const *argv[]) {
 	char* pathEnviron = getenv("PATH");
 	char** paths = (char **)malloc(SIZE*sizeof(char*));
 	char* input;
+	bool runInTheBackground = false;
 	int status, numArgs = 0;
 	char *token;
 	char** args = NULL;
 	struct dirent *de;
-
+	DIR *dr;
+	bool found = false;
 	int numPaths = 0; // number of directories on PATH
 
 	// Seperate each directory on PATH by ":"
@@ -93,11 +95,18 @@ int main(int argc, char const *argv[]) {
 	numPaths--;	
 	
 	// Print statement to confirm paths in path[]
-	int j;
-	for(j=0; j <= numPaths; j++) printf("FILE PATH:\n %s\n", paths[j]);
+	int j=0;
+    while ( j <= numPaths){
+            printf("FILE PATH:\n %s\n", paths[j]);
+            j++;
+    }
 
 	while (1){
+		runInTheBackground = false;
+		j=0
 		numArgs = 0;
+		int i =0;
+		
 		input = readline("esh>");
 		token = strtok(input, " ");
 		while ( token != NULL ){
@@ -108,9 +117,17 @@ int main(int argc, char const *argv[]) {
 			token = strtok(NULL, " ");
 		}
 
+		// Assess if the last character is & and make the last argument NULL for execv
+        if ( strcmp(args[numArgs-1],"&") == 0 ){
+                printf("RUN IN THE BACKGROUND\n");
+                runInTheBackground = true;
+                args[numArgs-1] = NULL;
+        } else {
+                args[numArgs] = NULL;
+        }
+
 		// Demonstrating the argument number and each token. args[0] should be the command.
 		printf("number of arguments: %i\n", numArgs);
-		int i =0;
 		while (i < numArgs ){
 			printf("LINE: %s\n", args[i]);
 			i++;
@@ -123,13 +140,17 @@ int main(int argc, char const *argv[]) {
 			free(paths);
 			exit(0);
 		}
-		// execv(paths[0],args);	
 
 		// Open each directory and see if args[0] is in them.
+		char argumentOne[1];
+		strcpy(argumentOne,"");
+		// Open each directory and see if args[0] is in them.
 		j=0;
-		DIR *dr;
-		_Bool found = FALSE;
+		int h=0;
+		bool found = false;
+		int status;
 		while( j<= numPaths ){
+			printf("Checking Path: %s\n", paths[j]);
 			dr=opendir(paths[j]);
 			if(dr == NULL){
 				printf("Couldn't open directory.\n");
@@ -138,17 +159,26 @@ int main(int argc, char const *argv[]) {
 			}
 			while( (de = readdir(dr)) != NULL){
 				if(strcmp(de->d_name,args[0]) == 0){
-					printf("It's in here: %s\n", paths[j]);
-					if(!fork()) {
-						execv(paths[j], args);
-						perror("Can't exec");
-					} 
-					wait(&status);
-					found = TRUE;
-					break;	// break if found
-				}
+                                        printf("It's in here: %s\n", paths[j]);
+                                        strcat(argumentOne,paths[j]);
+                                        strcat(argumentOne,"/");
+                                        strcat(argumentOne,args[0]);
+                                        printf("Final first argument for execv: %s %s\n", argumentOne,args[0]);
+                                        h=j;
+                                        j=numPaths + 1;
+                                        if(!fork()) {
+                                                execv(argumentOne,args);
+                                                perror("Can't exec\n");
+                                        }
+                                        wait(&status);
+                                        found = true;
+                                        break;
+                                }
+
 			}
 			if(found) break; // if command found exececuted stop looking for it
+			rewinddir(dr);
+			closedir(dr);
 			j++;
 		}
 	}
