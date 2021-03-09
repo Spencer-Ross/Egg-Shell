@@ -72,17 +72,15 @@ Objectives:
 **********************************************************************/
 
 int main(int argc, char const *argv[]) {
-	char* pathEnviron = getenv("PATH");
+	char *token, *input, *pathEnviron = getenv("PATH");
 	char** paths = (char **)malloc(SIZE*sizeof(char*));
-	char* input;
-	bool runInTheBackground = false;
-	int status, numArgs = 0;
-	char *token;
 	char** args = NULL;
+	bool runInTheBackground = false;
+	bool found = false;
+	int status, numArgs = 0;
+	int numPaths = 0; // number of directories on PATH
 	struct dirent *de;
 	DIR *dr;
-	bool found = false;
-	int numPaths = 0; // number of directories on PATH
 
 	// Seperate each directory on PATH by ":"
 	token = strtok(pathEnviron,":");
@@ -149,8 +147,6 @@ int main(int argc, char const *argv[]) {
 		// Open each directory and see if args[0] is in them.
 		j=0;
 		int h=0;
-		bool found = false;
-		int status;
 		while( j<= numPaths ){
 			//printf("Checking Path: %s\n", paths[j]);
 			dr=opendir(paths[j]);
