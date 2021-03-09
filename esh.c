@@ -54,6 +54,7 @@ Objectives:
 #include <unistd.h>
 // #include <sys/wait.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <errno.h>
 #include <dirent.h>
@@ -86,7 +87,7 @@ int main(int argc, char const *argv[]) {
 	// Seperate each directory on PATH by ":"
 	token = strtok(pathEnviron,":");
 	while ( token != NULL ){ 
-		printf("%s\n",token);
+		//printf("%s\n",token);
 		paths[numPaths] = (char *)malloc(strlen(token)*sizeof(char *));
 		strcpy(paths[numPaths],token);
 		numPaths++;
@@ -97,17 +98,18 @@ int main(int argc, char const *argv[]) {
 	// Print statement to confirm paths in path[]
 	int j=0;
     while ( j <= numPaths){
-            printf("FILE PATH:\n %s\n", paths[j]);
+            //printf("FILE PATH:\n %s\n", paths[j]);
             j++;
     }
 
 	while (1){
 		runInTheBackground = false;
 		args = (char **)realloc(args,0);
-		j=0
+		j=0;
 		numArgs = 0;
 		int i =0;
 		input = readline("esh>");
+		if (!strcmp(input, "") || !strcmp(input, "&")) continue;
 		token = strtok(input, " ");
 		while ( token != NULL ){
 			args = (char **)realloc(args, sizeof(char **)*(numArgs+1));
@@ -119,7 +121,7 @@ int main(int argc, char const *argv[]) {
 
 		// Assess if the last character is & and make the last argument NULL for execv
         if ( strcmp(args[numArgs-1],"&") == 0 ){
-                printf("RUN IN THE BACKGROUND\n");
+                //printf("RUN IN THE BACKGROUND\n");
                 runInTheBackground = true;
                 args[numArgs-1] = NULL;
         } else {
@@ -127,9 +129,9 @@ int main(int argc, char const *argv[]) {
         }
 
 		// Demonstrating the argument number and each token. args[0] should be the command.
-		printf("number of arguments: %i\n", numArgs);
+		//printf("number of arguments: %i\n", numArgs);
 		while (i < numArgs ){
-			printf("LINE: %s\n", args[i]);
+			//printf("LINE: %s\n", args[i]);
 			i++;
 		}
 
@@ -150,36 +152,62 @@ int main(int argc, char const *argv[]) {
 		bool found = false;
 		int status;
 		while( j<= numPaths ){
-			printf("Checking Path: %s\n", paths[j]);
+			//printf("Checking Path: %s\n", paths[j]);
 			dr=opendir(paths[j]);
 			if(dr == NULL){
-				printf("Couldn't open directory.\n");
+				//printf("Couldn't open directory.\n");
 				// return 0;
 				continue;
 			}
 			while( (de = readdir(dr)) != NULL){
 				if(strcmp(de->d_name,args[0]) == 0){
-                                        printf("It's in here: %s\n", paths[j]);
-                                        strcat(argumentOne,paths[j]);
-                                        strcat(argumentOne,"/");
-                                        strcat(argumentOne,args[0]);
-                                        printf("Final first argument for execv: %s %s\n", argumentOne,args[0]);
-                                        h=j;
-                                        j=numPaths + 1;
-                                        if(!fork()) {
-                                                execv(argumentOne,args);
-                                                perror("Can't exec\n");
-                                        }
-                                        wait(&status);
-                                        found = true;
-                                        break;
-                                }
+                        //printf("It's in here: %s\n", paths[j]);
+                        strcat(argumentOne,paths[j]);
+                        strcat(argumentOne,"/");
+                        strcat(argumentOne,args[0]);
+                        //printf("Final first argument for execv: %s %s\n", argumentOne,args[0]);
+                        h=j;
+                        j=numPaths + 1;
+                        if(!fork()) {
+                                execv(argumentOne,args);
+                                perror("Can't exec\n");
+                        }
+                        if (!runInTheBackground) wait(&status);
+                        found = true;
+                        break;
+                }
 
 			}
 			if(found) break; // if command found exececuted stop looking for it
 			rewinddir(dr);
 			closedir(dr);
 			j++;
+		}
+		if(found == false) {
+		    char* curr_path = ".";
+		    if((dr = opendir(curr_path)) == NULL) {
+		        //printf("Couldn't open directory.\n");
+		        continue;
+		    }
+		    while((de = readdir(dr)) != NULL) {
+		        if(strcmp(de->d_name,args[0]) == 0) {
+		            //printf("It's in here: %s\n", curr_path);
+		            strcat(argumentOne,curr_path);
+		            strcat(argumentOne,"/");
+		            strcat(argumentOne,args[0]);
+		            //printf("Final first argument for execv: %s %s\n", argumentOne,args[0]);
+		            h=j;
+		            j=numPaths + 1;
+		            if(!fork()) {
+		                    execv(argumentOne,args);
+		                    perror("Can't exec\n");
+		            }
+		            if (!runInTheBackground) wait(&status);
+		            found = true;
+		            break;
+		        } 
+		    }
+			if(found==false) printf("ERROR: %s not found!\n", args[0]);
 		}
 	}
 	
