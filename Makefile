@@ -1,16 +1,16 @@
 #C for object files, E for executables, A for all, L for lib flags
-CFLAGS=-c
-EFLAGS=-l
-AFLAGS=-o esh -l
+CFLAGS=-c 
+EFLAGS=-lreadline 
+AFLAGS=-o esh -lreadline 
 
 esh: esh.o
-	cc -o esh $(EFLAGS) esh.o
+	cc -o esh esh.o
 
 esh.o: esh.c
-	cc $(CFLAGS) esh.c
+	cc -c -lreadline esh.c
 
 all: esh.c
-	cc $(AFLAGS) esh.c
+	cc -o esh -lreadline esh.c
 
 clean:
 	rm -f esh.o && rm -f esh
