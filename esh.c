@@ -52,7 +52,7 @@ Objectives:
 
 /* Includes and definitions */
 #include <unistd.h>
-// #include <sys/wait.h>
+#include <sys/wait.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -155,9 +155,9 @@ int main(int argc, char const *argv[]) {
 			//printf("Checking Path: %s\n", paths[j]);
 			dr=opendir(paths[j]);
 			if(dr == NULL){
-				//printf("Couldn't open directory.\n");
-				// return 0;
-				continue;
+				// printf("Couldn't open directory.\n");
+				break;
+				//continue;
 			}
 			while( (de = readdir(dr)) != NULL){
 				if(strcmp(de->d_name,args[0]) == 0){
@@ -187,7 +187,8 @@ int main(int argc, char const *argv[]) {
 		    char* curr_path = ".";
 		    if((dr = opendir(curr_path)) == NULL) {
 		        //printf("Couldn't open directory.\n");
-		        continue;
+		        //continue;
+			break;
 		    }
 		    while((de = readdir(dr)) != NULL) {
 		        if(strcmp(de->d_name,args[0]) == 0) {
