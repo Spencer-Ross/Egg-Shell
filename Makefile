@@ -1,7 +1,7 @@
 #C for object files, E for executables, A for all, L for lib flags
-CFLAGS=-c -Wall -Werror -pedantic
-EFLAGS=-Wall -Werror -pedantic -l
-AFLAGS=-o esh -Wall -Werror -pedantic -l
+CFLAGS=-c
+EFLAGS=-l
+AFLAGS=-o esh -l
 
 esh: esh.o
 	cc -o esh $(EFLAGS) esh.o
